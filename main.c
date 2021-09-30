@@ -2,10 +2,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define HEIGHT 2
-#define WIDTH 2
+#define HEIGHT 5
+#define WIDTH 5
 
-int **generate_walls_map() {
+#define START { 3, 0 }
+#define GOAL { 0, 3 }
+#define WALLS {0, 2}, {1, 2}, {1, 3}
+
+void set_walls_map(int **map) {
+  int i, j, k, l;
+  int walls[3][2] = {WALLS};
+
+  for (i = 0; i < 3; i++) {
+    k = walls[i][1];
+    l = walls[i][0];
+
+    map[k][l] = 1;
+  }
+}
+
+int **create_walls_map() {
   int i, j;
   int **walls = malloc(sizeof(int) * WIDTH * HEIGHT);
 
@@ -17,23 +33,54 @@ int **generate_walls_map() {
     }
   }
 
-  // let's add some walls
-
   return walls;
 }
 
-int main(int argc, char const *argv[]) {
-  AStarConfig config = {NULL, WIDTH, HEIGHT, {0, 0}, {1, 1}};
+void print_map(int **map) {
+  int i, j;
 
-  config.walls_map = generate_walls_map();
+  for (i = 0; i < HEIGHT; i++) {
+    for (j = 0; j < WIDTH; j++) {
+      if (map[i][j] == 0) {
+        printf(". ");
+      } else if (map[i][j] == 1) {
+        printf("X ");
+      } else {
+        printf("@ ");
+      }
+    }
+    printf("\n");
+  }
+  printf("\n");
+}
+
+void print_path(int **map, AStarSet path) {
+  int i, j;
+
+  while (path != NULL) {
+    j = path->point.x;
+    i = path->point.y;
+    map[i][j] = 2;
+
+    path = path->next;
+  }
+
+  print_map(map);
+}
+
+int main(int argc, char const *argv[]) {
+  AStarConfig config = {NULL, WIDTH, HEIGHT, START, GOAL};
+
+  config.walls_map = create_walls_map();
+  set_walls_map(config.walls_map);
   AStarSet path;
 
   path = astar(&config);
 
   if (path == NULL) {
-    printf("L'algoritmo ha fallito\n");
+    printf("The algorithm failed\n");
   } else {
-    as_set_print(path);
+    print_path(config.walls_map, path);
   }
 
   return 0;

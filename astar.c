@@ -1,7 +1,7 @@
+#include "astar.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
-#include "astar.h"
 
 int as_set_is_empty(AStarSet l);
 AStarSet as_set_add(AStarSet l, AStarPoint *p);
@@ -19,15 +19,15 @@ AStarPoint as_point_from(int p[]);
 double heuristic(AStarPoint *p1, AStarPoint *p2);
 int is_valid_point(int x, int y, AStarConfig *c);
 AStarPoint *create_point_neighbors();
-void set_point_neighbors(AStarPoint *neighbors, AStarPoint *p, AStarConfig *config);
-void astar_free(AStarSet open, AStarSet closed, AStarGraph came_from, AStarPoint *neighbors);
+void set_point_neighbors(AStarPoint *neighbors, AStarPoint *p,
+                         AStarConfig *config);
+void astar_free(AStarSet open, AStarSet closed, AStarGraph came_from,
+                AStarPoint *neighbors);
 AStarSet reconstruct_path(AStarGraph p);
 
 /* ======================= SET ============================= */
 
-int as_set_is_empty(AStarSet l) {
-  return l == NULL;
-}
+int as_set_is_empty(AStarSet l) { return l == NULL; }
 
 AStarSet as_set_add(AStarSet l, AStarPoint *p) {
   AStarNode *new = malloc(sizeof(AStarNode));
@@ -39,7 +39,7 @@ AStarSet as_set_add(AStarSet l, AStarPoint *p) {
 }
 
 AStarPoint as_set_find_lowest_fscore(AStarSet l) {
-  int f = 9999; /*  random big int */
+  double f = 9999; /*  random big num */
   AStarNode *p = l;
   AStarPoint r;
 
@@ -104,7 +104,7 @@ void as_set_print(AStarSet l) {
     l = l->next;
   }
 
-  printf("(fine lista)\n\n");
+  printf("(end of list)\n\n");
 }
 
 void as_set_free(AStarSet l) {
@@ -208,7 +208,8 @@ AStarPoint *create_point_neighbors() {
   return neighbors;
 }
 
-void set_point_neighbors(AStarPoint *neighbors, AStarPoint *p, AStarConfig *config) {
+void set_point_neighbors(AStarPoint *neighbors, AStarPoint *p,
+                         AStarConfig *config) {
   int w[DIRECTIONS][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
   int i, x, y;
 
@@ -221,13 +222,6 @@ void set_point_neighbors(AStarPoint *neighbors, AStarPoint *p, AStarConfig *conf
       neighbors[i].y = y;
     }
   }
-}
-
-void astar_free(AStarSet open, AStarSet closed, AStarGraph came_from, AStarPoint *neighbors) {
-  as_set_free(open);
-  as_set_free(closed);
-  as_graph_free(came_from);
-  free(neighbors);
 }
 
 AStarSet reconstruct_path(AStarGraph p) {
@@ -268,8 +262,11 @@ AStarSet astar(AStarConfig *config) {
 
     if (as_point_equal(&x, &goal)) {
       failed = FALSE;
+      as_set_free(open);
+      as_set_free(closed);
+      free(neighbors);
       result = reconstruct_path(last);
-      astar_free(open, closed,came_from, neighbors);
+      as_graph_free(came_from);
 
       return result;
     }
@@ -309,7 +306,10 @@ AStarSet astar(AStarConfig *config) {
   }
 
   if (failed) {
-    astar_free(open, closed,came_from, neighbors);
+    as_set_free(open);
+    as_set_free(closed);
+    free(neighbors);
+    as_graph_free(came_from);
     return NULL;
   }
 }
