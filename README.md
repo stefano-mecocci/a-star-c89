@@ -4,7 +4,7 @@ An implementation of A-star algorithm in C, Fully functional.
 
 # Features
 - C89 standard compliant
-- semi-automatic garbage collection
+- automatic garbage collection
 - less than 400 LOCs
 
 # Usage
